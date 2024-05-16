@@ -23,6 +23,9 @@ function Details() {
             fetch(`https://auth-rg69.onrender.com/api/products/${params.id}`)
             .then(res => res.json())
             .then(data => {
+                setPhone(data)
+                console.log(data);
+                
             })
             .catch(err => {
                 console.log(err);
@@ -36,7 +39,7 @@ function Details() {
  
     return (
     <div>
-        <h3></h3>
+        <h3>{phone?.name}</h3>
     </div>
   )
 }
