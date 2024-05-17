@@ -1,121 +1,119 @@
-import { useEffect, useState } from "react"
-import Card from "../components/Card"
-import Form from "../components/Form"
-import "../App.css"
+import { useEffect, useState } from "react";
+import Card from "../components/Card";
+import Form from "../components/Form";
+import "../App.css";
 
 interface PhoneType {
-  id: string,
-  name: string,
-  description: string,
-  price: number,
-  status: string,
-  category_id: string,
-  createdAt: string,
-  updateAt: string
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  status: string;
+  category_id: string;
+  createdAt: string;
+  updateAt: string;
 }
 
 interface BeingDeletedType {
-  id:string,
-  beingDeleted:boolean
+  id: string;
+  beingDeleted: boolean;
 }
 
 interface PhoneTypeCreate {
-  name:string | undefined,
-  price:number | undefined | string,
-  description:string | undefined,
-  status:string,
-  category_id:string
+  name: string | undefined;
+  price: number | undefined | string;
+  description: string | undefined;
+  status: string;
+  category_id: string;
 }
 
 function Home() {
   const [data, setData] = useState<PhoneType[]>([]);
-  const [beingDeleted,setBeingDeleted] = useState<BeingDeletedType>({id:"n", beingDeleted:false});
-  const [createLoading, setCreateLoading] = useState<boolean>(false)
+  const [beingDeleted, setBeingDeleted] = useState<BeingDeletedType>({ id: "n", beingDeleted: false });
+  const [createLoading, setCreateLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
   async function getData(url: string) {
     const resp = await fetch(url);
     const d = await resp.json();
-    setData(d)
+    setData(d);
+    setLoading(false);
   }
 
   useEffect(() => {
-    getData("https://auth-rg69.onrender.com/api/products/all")
-  }, [])
+    getData("https://auth-rg69.onrender.com/api/products/all");
+  }, []);
 
   useEffect(() => {
     console.log(data);
-
-  }, [data])
+  }, [data]);
 
   function deleteItem(id: string) {
     if (id) {
-      setBeingDeleted({id:id,beingDeleted:true})
+      setBeingDeleted({ id: id, beingDeleted: true });
       fetch(`https://auth-rg69.onrender.com/api/products/${id}`, {
-        method: "DELETE"
+        method: "DELETE",
       })
-        .then(res => res.json())
-        .then(d => {
-          if (d.message == "Mahsulot muvaffaqiyatli o'chirildi") {
+        .then((res) => res.json())
+        .then((d) => {
+          if (d.message === "Mahsulot muvaffaqiyatli o'chirildi") {
             let copied = JSON.parse(JSON.stringify(data));
-
-            copied = copied.filter((el:PhoneType) => {
-              return el.id != id
+            copied = copied.filter((el: PhoneType) => {
+              return el.id !== id;
             });
-
-            setData(copied)
+            setData(copied);
           }
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err);
         })
         .finally(() => {
-          setBeingDeleted({id:id,beingDeleted:false})
-        })
-
+          setBeingDeleted({ id: id, beingDeleted: false });
+        });
     }
-
   }
 
-  function handleSave(phone:PhoneTypeCreate) {
-    setCreateLoading(true)
+  function handleSave(phone: PhoneTypeCreate) {
+    setCreateLoading(true);
 
     fetch("https://auth-rg69.onrender.com/api/products/", {
-      method:"POST",
+      method: "POST",
       headers: {
-        "Content-type": "application/json"
+        "Content-type": "application/json",
       },
-      body:JSON.stringify(phone)
+      body: JSON.stringify(phone),
     })
-    .then(res => res.json())
-    .then(d => {
-      if (d.id) {
-        let copied = JSON.parse(JSON.stringify(data))
-        copied.push(d)
-        setData(copied)
-      }
-    })
-    .catch(err => {
-      console.log(err);
-    })
-    .finally(() => {
-      setCreateLoading(false)
-    })
-    
+      .then((res) => res.json())
+      .then((d) => {
+        if (d.id) {
+          let copied = JSON.parse(JSON.stringify(data));
+          copied.push(d);
+          setData(copied);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        setCreateLoading(false);
+      });
   }
 
   return (
     <div className="container">
-      <Form loading = {createLoading} save = {handleSave}></Form>
+      <Form loading={createLoading} save={handleSave}></Form>
 
       <div className="card-wrapper">
-        {
-          data.length && data.map((phone,index) => {
-            return <Card key={index} beingDeleted = {beingDeleted} deleteItem={deleteItem} data={phone}></Card>
-          })
-        }
+        {loading ? (
+          <div className="loader">Loading...</div> 
+        ) : (
+          data.length > 0 && data.map((phone, index) => (
+            <Card key={index} beingDeleted={beingDeleted} deleteItem={deleteItem} data={phone}></Card>
+          ))
+        )}
       </div>
     </div>
-  )
+  );
 }
 
-export default Home
+export default Home;
