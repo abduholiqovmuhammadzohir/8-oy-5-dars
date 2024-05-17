@@ -1,4 +1,4 @@
-import { FC, useRef } from "react"
+import { FC, useRef, useState } from "react"
 
 interface FormType {
     save: (arg: PhoneType) => void,
@@ -19,8 +19,44 @@ const Form: FC<FormType> = (props) => {
     const priceRef = useRef<HTMLInputElement>(null)
     const descriptionRef = useRef<HTMLTextAreaElement>(null)
 
+    const [nameError, setNameError] = useState<string | null>(null);
+    const [priceError, setPriceError] = useState<string | null>(null);
+    const [descriptionError, setDescriptionError] = useState<string | null>(null);
+
+    function validateForm(): boolean {
+        let isValid = true;
+
+        if (!nameRef.current?.value) {
+            setNameError("Name kiritish shart");
+            isValid = false;
+        } else {
+            setNameError(null);
+        }
+
+        if (!priceRef.current?.value || Number(priceRef.current?.value) <= 100) {
+            setPriceError("Price kiritish shart");
+            isValid = false;
+        } else {
+            setPriceError(null);
+        }
+
+        if (!descriptionRef.current?.value || descriptionRef.current?.value.length < 10) {
+            setDescriptionError("Description kamida 10 ta belgi bo'lishi kerak");
+            isValid = false;
+        } else {
+            setDescriptionError(null);
+        }
+
+        return isValid;
+    }
+
     function handleSave(event: React.MouseEvent) {
         event.preventDefault();
+
+        if (!validateForm()) {
+            return;
+        }
+
         const phone: PhoneType = {
             name: nameRef.current?.value,
             price: priceRef.current?.value,
@@ -30,27 +66,33 @@ const Form: FC<FormType> = (props) => {
         }
 
         props.save(phone);
-        if (nameRef?.current?.value) {
+
+        if (nameRef.current?.value) {
             nameRef.current.value = ''
         }
 
-        if (priceRef?.current?.value) {
+        if (priceRef.current?.value) {
             priceRef.current.value = ''
         }
 
-        if (descriptionRef?.current?.value) {
+        if (descriptionRef.current?.value) {
             descriptionRef.current.value = ''
         }
-
     }
 
     return (
-        <div>
+        <div className="form">
             <form>
-                <input ref={nameRef} type="text" placeholder="Enter name..." />
-                <input ref={priceRef} type="number" placeholder="Enter price..." />
-                <textarea ref={descriptionRef} name="" placeholder="Enter description..."></textarea>
-                <button onClick={handleSave} disabled={props.loading ? true : false}>  {props.loading ? "Yuborilmoqda..." : "Saqlash"}</button>
+                <label>Enter name*</label><br />
+                <input ref={nameRef} type="text" placeholder="Enter name..." /><br />
+                {nameError && <span style={{ color: 'red' }}>{nameError}</span>}<br />
+                <label>Enter price*</label><br />
+                <input ref={priceRef} type="number" placeholder="Enter price..." /><br />
+                {priceError && <span style={{ color: 'red' }}>{priceError}</span>}<br />
+                <label>Enter description*</label><br />
+                <textarea ref={descriptionRef} name="" placeholder="Enter description..."></textarea><br />
+                {descriptionError && <span style={{ color: 'red' }}>{descriptionError}</span>}<br />
+                <button onClick={handleSave} disabled={props.loading}>{props.loading ? "Yuborilmoqda..." : "Saqlash"}</button>
             </form>
         </div>
     )
